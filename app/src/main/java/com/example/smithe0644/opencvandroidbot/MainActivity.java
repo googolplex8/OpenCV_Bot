@@ -6,7 +6,7 @@ import android.util.Log;
 import org.opencv.android.*;
 import org.opencv.core.Mat;
 
-public class Test extends Activity implements CameraBridgeViewBase.CvCameraViewListener{
+public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener{
 
     OpenCVLoader OpenCvLoader = new OpenCVLoader();
 
