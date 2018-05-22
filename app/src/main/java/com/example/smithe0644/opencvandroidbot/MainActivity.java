@@ -16,7 +16,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             switch(status){
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i("Desenuts ", "openCv loaded");
+                    Log.i("Hello World ", "OpenCV loaded");
 
                 }break;
                 default:
