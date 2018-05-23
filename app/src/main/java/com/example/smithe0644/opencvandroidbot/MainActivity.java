@@ -53,5 +53,4 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         super.onResume();
         OpenCvLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6,this, loaderCallback);
     }
-
 }
