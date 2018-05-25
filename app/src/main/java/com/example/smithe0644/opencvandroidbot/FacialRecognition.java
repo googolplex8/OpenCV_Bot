@@ -4,6 +4,8 @@ package com.example.smithe0644.opencvandroidbot;
 import android.util.Log;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.imgcodecs.*;
@@ -18,7 +20,10 @@ public class FacialRecognition {
         Mat gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);
 
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5);
+        MatOfRect rect = new MatOfRect();
+
+        face_cascade.detectMultiScale(gray, rect);
+
 
     }
 }
