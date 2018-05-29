@@ -2,6 +2,7 @@ package com.example.smithe0644.opencvandroidbot;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -16,12 +17,15 @@ import org.opencv.core.Mat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener{
 
     OpenCVLoader OpenCvLoader = new OpenCVLoader();
     Camera camera;
+
+    ArrayList<String> filePaths = new ArrayList<String>();
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
 
@@ -121,9 +125,17 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 //        }
 //        camera = getCameraInstance();
         Camera.Parameters parameters = camera.getParameters();
+
         parameters.setJpegQuality(100);
+        parameters.setJpegThumbnailQuality(100);
         parameters.setRotation(90);
+        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        parameters.setSceneMode(Camera.Parameters.SCENE_MODE_AUTO);
+        parameters.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+        parameters.setExposureCompensation(0);
+        parameters.setPictureFormat(ImageFormat.JPEG);
+
         camera.setParameters(parameters);
         try {
             if (camera == null) {
@@ -139,7 +151,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 }
 
                 Log.d("quality ", String.valueOf(camera.getParameters().getJpegQuality()));
-                camera.takePicture(null, null, new Camera.PictureCallback() {
+                camera.takePicture(null,null, new Camera.PictureCallback() {
 
                     @Override
                     public void onPictureTaken(byte[] data, Camera camera) {
@@ -153,6 +165,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                         String date = dateFormat.format(new Date());
                         String photoFile = "Picture" + "_" + date + ".jpg";
                         String filename = pictureFileDir.getPath() + File.separator + photoFile;
+
+                        filePaths.add(filename);
+
                         File mainPicture = new File(filename);
 
                         try {
