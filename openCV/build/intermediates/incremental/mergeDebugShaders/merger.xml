@@ -1,6 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<<<<<<< HEAD
 <merger version="3"><dataSet config="main"><source path="C:\Users\linw3353\Documents\GitHub\OpenCV_Bot\openCV\src\main\shaders"/></dataSet><dataSet config="debug"><source path="C:\Users\linw3353\Documents\GitHub\OpenCV_Bot\openCV\src\debug\shaders"/></dataSet></merger>
-=======
-<merger version="3"><dataSet config="main"><source path="C:\Users\smithe0644\Documents\GitHub\OpenCV_Bot\openCV\src\main\shaders"/></dataSet><dataSet config="debug"><source path="C:\Users\smithe0644\Documents\GitHub\OpenCV_Bot\openCV\src\debug\shaders"/></dataSet></merger>
->>>>>>> 6c4e44845bf31a4906192ded1e4bb189b2a3fa34

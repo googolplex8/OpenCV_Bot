@@ -13,6 +13,7 @@ import android.view.View;
 
 import org.opencv.android.*;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -169,12 +170,17 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                         filePaths.add(filename);
 
                         File mainPicture = new File(filename);
-
                         try {
                             FileOutputStream fos = new FileOutputStream(mainPicture);
                             fos.write(data);
                             fos.close();
                             Log.d("kkkk","image saved");
+
+
+                            Mat src = Imgcodecs.imread("/Phone/Pictures/" + filename);
+
+
+
                         } catch (Exception error) {
                             Log.d("kkkk","Image could not be saved");
                         }
@@ -185,7 +191,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         } catch (Exception e) {
             camera.release();
         }
-        
+
     }
 
 
