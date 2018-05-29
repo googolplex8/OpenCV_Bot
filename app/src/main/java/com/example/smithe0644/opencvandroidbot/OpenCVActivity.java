@@ -76,6 +76,8 @@ public class OpenCVActivity extends Activity
         openCvCameraView = new JavaCameraView(this, -1);
         setContentView(openCvCameraView);
         openCvCameraView.setCvCameraViewListener(this);
+
+        
     }
 
     @Override

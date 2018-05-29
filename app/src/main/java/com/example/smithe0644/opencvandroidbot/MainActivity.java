@@ -185,6 +185,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         } catch (Exception e) {
             camera.release();
         }
+        
     }
 
 

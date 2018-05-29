@@ -20,14 +20,11 @@ public class FacialRecognition {
         Mat gray = new Mat();
         Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGB2GRAY);
 
-<<<<<<< HEAD
         MatOfRect rect = new MatOfRect();
 
         face_cascade.detectMultiScale(gray, rect);
 
-=======
 //        faces = face_cascade.detectMultiScale(gray, 1.3, 5);
->>>>>>> origin/master
 
     }
 }
