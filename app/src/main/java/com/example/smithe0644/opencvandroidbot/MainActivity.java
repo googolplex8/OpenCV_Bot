@@ -176,10 +176,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                             fos.close();
                             Log.d("kkkk","image saved");
 
-
                             Mat src = Imgcodecs.imread("/Phone/Pictures/" + filename);
-
-
 
                         } catch (Exception error) {
                             Log.d("kkkk","Image could not be saved");

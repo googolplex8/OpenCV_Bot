@@ -48,31 +48,24 @@ public class OpenCVActivity extends Activity
     };
 
     private void initializeOpenCVDependencies() {
-
         try {
 //            // Copy the resource into a temp file so OpenCV can load it
-//            InputStream is = getApplicationContext().getAssets().open("lbpcascade_frontalface.xml");
-//            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-//            File mCascadeFile = new File(cascadeDir, "assets/lbpcascade_frontalface.xml");
-//            FileOutputStream os = new FileOutputStream(mCascadeFile);
-//
-//
-//            byte[] buffer = new byte[4096];
-//            int bytesRead;
-//            while ((bytesRead = is.read(buffer)) != -1) {
-//                os.write(buffer, 0, bytesRead);
-//            }
-//            is.close();
-//            os.close();
-//            // Load the cascade classifier
-//
-//            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+            InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
+            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+            File mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
+            FileOutputStream os = new FileOutputStream(mCascadeFile);
 
 
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            is.close();
+            os.close();
+            // Load the cascade classifier
 
-
-            cascadeClassifier = new CascadeClassifier(getClass().getResource("/lbpcascade_frontalface.xml").getPath());
-
+            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
 
         } catch (Exception e) {
             Log.e("OpenCVActivity", "Error loading cascade", e);
@@ -138,49 +131,47 @@ public class OpenCVActivity extends Activity
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
     }
-//
-//
-//    public void output(Mat subimg){
-//
-//        Bitmap bmp = null;
-//        try {
-//            bmp = Bitmap.createBitmap(subimg.cols(), subimg.rows(), Bitmap.Config.ARGB_8888);
-//            Utils.matToBitmap(subimg, bmp);
-//        } catch (CvException e) {
-//            Log.d("didn't work", e.getMessage());
-//        }
-//
-//        subimg.release();
-//
-//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-//
-//
-//        byte[] byteArray = stream.toByteArray();
-//
-//
-//        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-//        File pictureFileDir=new File(root);
-//
-//        if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
-//            pictureFileDir.mkdirs();
-//        }
-//
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-//        String date = dateFormat.format(new Date());
-//        String photoFile = "Frmae with rectangle" + "_" + date + ".jpg";
-//        String filename = pictureFileDir.getPath() + File.separator + photoFile;
-//
-//
-//        File mainPicture = new File(filename);
-//        try {
-//            FileOutputStream fos = new FileOutputStream(mainPicture);
-//            fos.write(byteArray);
-//            fos.close();
-//            Log.d("kkkk","image saved");
-//        } catch (Exception error) {
-//            Log.d("kkkk","Image could not be saved");
-//        }
-//
-//    }
+
+
+    public void output(Mat subimg){
+
+        Bitmap bmp = null;
+        try {
+            bmp = Bitmap.createBitmap(subimg.cols(), subimg.rows(), Bitmap.Config.RGB_565);
+            Utils.matToBitmap(subimg, bmp);
+        } catch (CvException e) {
+            Log.d("didn't work", e.getMessage());
+        }
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+
+
+        byte[] byteArray = stream.toByteArray();
+
+
+        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+        File pictureFileDir=new File(root);
+
+        if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
+            pictureFileDir.mkdirs();
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+        String date = dateFormat.format(new Date());
+        String photoFile = "Frame with no rectangle" + "_" + date + ".jpeg";
+        String filename = pictureFileDir.getPath() + File.separator + photoFile;
+
+
+        File mainPicture = new File(filename);
+        try {
+            FileOutputStream fos = new FileOutputStream(mainPicture);
+            fos.write(byteArray);
+            fos.close();
+            Log.d("kkkk","image saved");
+        } catch (Exception error) {
+            Log.d("kkkk","Image could not be saved");
+        }
+
+    }
 }
