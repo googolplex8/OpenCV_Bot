@@ -111,6 +111,9 @@ public class OpenCVActivity extends Activity
         if (cascadeClassifier != null) {
             cascadeClassifier.detectMultiScale(grayscaleImage, faces, 1.1, 2, 2,
                     new Size(absoluteFaceSize, absoluteFaceSize), new Size());
+            Log.d("cascadeClassifier","is not equal to null");
+        }else{
+            Log.d("cascadeClassifier","is equal to null");
         }
 
         // If there are any faces found, draw a rectangle around it
