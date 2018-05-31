@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static android.content.ContentValues.TAG;
-
 public class OpenCVActivity extends Activity
         implements CvCameraViewListener {
 
@@ -101,21 +99,22 @@ public class OpenCVActivity extends Activity
     }
 
     @Override
-    public Mat onCameraFrame(Mat aInputFrame) {
+    public Mat onCameraFrame(Mat InputFrame) {
+
+        Mat aInputFrame = rotate(InputFrame, 90);
+
         // Create a grayscale image
-        Imgproc.cvtColor(aInputFrame, grayscaleImage, Imgproc.COLOR_RGBA2RGB);
+        Imgproc.cvtColor(aInputFrame, grayscaleImage, Imgproc.COLOR_RGBA2GRAY);
 
         MatOfRect faces = new MatOfRect();
 
+
+
         // Use the classifier to detect faces
         if (cascadeClassifier != null) {
-            cascadeClassifier.detectMultiScale(grayscaleImage, faces, 1.1, 2, 2,
+            cascadeClassifier.detectMultiScale(grayscaleImage, faces, 1.1, 2,0,
                     new Size(absoluteFaceSize, absoluteFaceSize), new Size());
-            Log.d("cascadeClassifier","is not equal to null");
-        }else{
-            Log.d("cascadeClassifier","is equal to null");
         }
-
         // If there are any faces found, draw a rectangle around it
         Rect[] facesArray = faces.toArray();
 
@@ -125,6 +124,7 @@ public class OpenCVActivity extends Activity
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
 
 //        output(aInputFrame);
+//        aInputFrame = rotate(InputFrame, 270);
 
         return aInputFrame;
     }
@@ -136,45 +136,64 @@ public class OpenCVActivity extends Activity
     }
 
 
-    public void output(Mat subimg){
+//    public void output(Mat subimg){
+//
+//        Bitmap bmp = null;
+//        try {
+//            bmp = Bitmap.createBitmap(subimg.cols(), subimg.rows(), Bitmap.Config.RGB_565);
+//            Utils.matToBitmap(subimg, bmp);
+//        } catch (CvException e) {
+//            Log.d("didn't work", e.getMessage());
+//        }
+//
+//        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+//
+//
+//        byte[] byteArray = stream.toByteArray();
+//
+//
+//        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+//        File pictureFileDir=new File(root);
+//
+//        if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
+//            pictureFileDir.mkdirs();
+//        }
+//
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+//        String date = dateFormat.format(new Date());
+//        String photoFile = "Frame with no rectangle" + "_" + date + ".jpeg";
+//        String filename = pictureFileDir.getPath() + File.separator + photoFile;
+//
+//
+//        File mainPicture = new File(filename);
+//        try {
+//            FileOutputStream fos = new FileOutputStream(mainPicture);
+//            fos.write(byteArray);
+//            fos.close();
+//            Log.d("kkkk","image saved");
+//        } catch (Exception error) {
+//            Log.d("kkkk","Image could not be saved");
+//        }
+//
+//    }
 
-        Bitmap bmp = null;
-        try {
-            bmp = Bitmap.createBitmap(subimg.cols(), subimg.rows(), Bitmap.Config.RGB_565);
-            Utils.matToBitmap(subimg, bmp);
-        } catch (CvException e) {
-            Log.d("didn't work", e.getMessage());
+
+    public static Mat rotate(Mat src, double angle)
+    {
+        Mat dst = new Mat();
+        if(angle == 180 || angle == -180) {
+            Core.flip(src, dst, -1);
+        } else if(angle == 90 || angle == -270) {
+            Core.flip(src.t(), dst, 1);
+        } else if(angle == 270 || angle == -90) {
+            Core.flip(src.t(), dst, 0);
         }
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        Imgproc.resize(dst, dst, src.size());
 
 
-        byte[] byteArray = stream.toByteArray();
-
-
-        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-        File pictureFileDir=new File(root);
-
-        if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
-            pictureFileDir.mkdirs();
-        }
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
-        String date = dateFormat.format(new Date());
-        String photoFile = "Frame with no rectangle" + "_" + date + ".jpeg";
-        String filename = pictureFileDir.getPath() + File.separator + photoFile;
-
-
-        File mainPicture = new File(filename);
-        try {
-            FileOutputStream fos = new FileOutputStream(mainPicture);
-            fos.write(byteArray);
-            fos.close();
-            Log.d("kkkk","image saved");
-        } catch (Exception error) {
-            Log.d("kkkk","Image could not be saved");
-        }
-
+        return dst;
     }
+
 }
