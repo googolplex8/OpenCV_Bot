@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Policy;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -58,10 +59,12 @@ public class OpenCVActivity extends Activity
             int bytesRead;
             while ((bytesRead = is.read(buffer)) != -1) {
                 os.write(buffer, 0, bytesRead);
+                Log.d("byte: ", String.valueOf(bytesRead));
             }
             is.close();
             os.close();
             // Load the cascade classifier
+            String path = mCascadeFile.getAbsolutePath();
 
             cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
 
@@ -99,22 +102,25 @@ public class OpenCVActivity extends Activity
     }
 
     @Override
-    public Mat onCameraFrame(Mat InputFrame) {
+    public Mat onCameraFrame(Mat aInputFrame) {
 
-        Mat aInputFrame = rotate(InputFrame, 90);
+//        Mat aInputFrame = rotate(InputFrame, 90);
 
         // Create a grayscale image
-        Imgproc.cvtColor(aInputFrame, grayscaleImage, Imgproc.COLOR_RGBA2GRAY);
+
+//        Imgproc.cvtColor(aInputFrame, aInputFrame, Imgproc.COLOR_RGBA2GRAY);
+
 
         MatOfRect faces = new MatOfRect();
 
-
-
         // Use the classifier to detect faces
         if (cascadeClassifier != null) {
-            cascadeClassifier.detectMultiScale(grayscaleImage, faces, 1.1, 2,0,
-                    new Size(absoluteFaceSize, absoluteFaceSize), new Size());
+//            cascadeClassifier.detectMultiScale(grayscaleImage, faces, 1.1, 0,null,
+//                    new Size(absoluteFaceSize, absoluteFaceSize), new Size());
+            cascadeClassifier.detectMultiScale(aInputFrame, faces);
         }
+
+
         // If there are any faces found, draw a rectangle around it
         Rect[] facesArray = faces.toArray();
 
