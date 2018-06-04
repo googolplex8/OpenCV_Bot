@@ -59,7 +59,7 @@ public class OpenCVActivity extends Activity
             int bytesRead;
             while ((bytesRead = is.read(buffer)) != -1) {
                 os.write(buffer, 0, bytesRead);
-                Log.d("byte: ", String.valueOf(bytesRead));
+                Log.d("Buffer: ", buffer.toString());
             }
             is.close();
             os.close();
@@ -70,7 +70,7 @@ public class OpenCVActivity extends Activity
             Log.d("Path: ", path);
 
             cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-
+            cascadeClassifier.load(mCascadeFile.getAbsolutePath());
             if(cascadeClassifier.empty()){
                 Log.d("cascadeClassifier", "is empty");
             }else Log.d("cascadeClassifier", "not empty");
