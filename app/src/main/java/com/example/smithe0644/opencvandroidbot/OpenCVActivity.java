@@ -66,7 +66,14 @@ public class OpenCVActivity extends Activity
             // Load the cascade classifier
             String path = mCascadeFile.getAbsolutePath();
 
+            Log.d("information","here");
+            Log.d("Path: ", path);
+
             cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+
+            if(cascadeClassifier.empty()){
+                Log.d("cascadeClassifier", "is empty");
+            }else Log.d("cascadeClassifier", "not empty");
 
         } catch (Exception e) {
             Log.e("OpenCVActivity", "Error loading cascade", e);
