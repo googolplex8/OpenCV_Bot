@@ -51,7 +51,7 @@ public class OpenCVActivity extends Activity
 //            // Copy the resource into a temp file so OpenCV can load it
             InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-            File mCascadeFile = new File(cascadeDir, "cascade.xml");
+            File mCascadeFile = new File(cascadeDir, "lbpcascade_frontalface.xml");
             FileOutputStream os = new FileOutputStream(mCascadeFile);
 
 
@@ -74,8 +74,6 @@ public class OpenCVActivity extends Activity
             if(cascadeClassifier.empty()){
                 Log.d("cascadeClassifier", "is empty");
             }else Log.d("cascadeClassifier", "not empty");
-
-            cascadeDir.delete();
 
         } catch (Exception e) {
             Log.e("OpenCVActivity", "Error loading cascade", e);
