@@ -34,6 +34,10 @@ public class OpenCVActivity extends Activity
     private int height;
     private int width;
 
+
+    //Stands for AVG x
+    private double lastAVGx;
+
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -50,7 +54,7 @@ public class OpenCVActivity extends Activity
 
     private void initializeOpenCVDependencies() {
         try {
-//            // Copy the resource into a temp file so OpenCV can load it
+            // Copy the resource into a temp file so OpenCV can load it
             InputStream is = getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
             File mCascadeFile = new File(cascadeDir, "cascade.xml");
@@ -65,14 +69,15 @@ public class OpenCVActivity extends Activity
             }
             is.close();
             os.close();
+
+            //Writes it into the file mCascadeFile
+
             // Load the cascade classifier
+
             String path = mCascadeFile.getAbsolutePath();
 
-            Log.d("information","here");
-            Log.d("Path: ", path);
-
-            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-            cascadeClassifier.load(mCascadeFile.getAbsolutePath());
+            cascadeClassifier = new CascadeClassifier(path);
+            cascadeClassifier.load(path);
             if(cascadeClassifier.empty()){
                 Log.d("cascadeClassifier", "is empty");
             }else Log.d("cascadeClassifier", "not empty");
@@ -83,7 +88,7 @@ public class OpenCVActivity extends Activity
             Log.e("OpenCVActivity", "Error loading cascade", e);
         }
 
-        // And we are ready to go
+        //Enables view in UI
         openCvCameraView.enableView();
     }
 
@@ -97,7 +102,6 @@ public class OpenCVActivity extends Activity
         setContentView(openCvCameraView);
         openCvCameraView.setCvCameraViewListener(this);
 
-        
     }
 
     @Override
@@ -138,8 +142,14 @@ public class OpenCVActivity extends Activity
         Rect[] facesArray = faces.toArray();
 
 
-        for (int i = 0; i <facesArray.length; i++)
+        for (int i = 0; i <facesArray.length; i++) {
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
+            if(facesArray.length==1){
+                setAverage(Calculations(facesArray[i].tl(),facesArray[i].br()));
+            }
+        }
+
+
 
         if(facesArray.length>=1){
             Log.d("face found", "we found a face mdudes");
@@ -156,6 +166,18 @@ public class OpenCVActivity extends Activity
     public void onResume() {
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
+    }
+
+    public double Calculations(Point tl, Point br){
+        double avg = (tl.x+br.x)/2;
+        if(avg>getAverage()){
+            //Move right
+        }else if(avg < getAverage()){
+            //Move left
+        }else{
+            //Don't move
+        }
+        return avg;
     }
 
 
@@ -201,6 +223,14 @@ public class OpenCVActivity extends Activity
 
     }
 
+
+    public double getAverage(){
+        return lastAVGx;
+    }
+
+    public double setAverage(double avg){
+        return lastAVGx = avg;
+    }
 
     public static Mat rotate(Mat src, double angle)
     {
