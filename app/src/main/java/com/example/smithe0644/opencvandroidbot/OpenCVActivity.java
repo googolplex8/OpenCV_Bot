@@ -30,7 +30,9 @@ public class OpenCVActivity extends Activity
     private CameraBridgeViewBase openCvCameraView;
     private CascadeClassifier cascadeClassifier;
     private Mat grayscaleImage;
-    private int absoluteFaceSize;
+
+    private int height;
+    private int width;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -103,7 +105,8 @@ public class OpenCVActivity extends Activity
         grayscaleImage = new Mat(height, width, CvType.CV_8UC4);
 
         // The faces will be a 20% of the height of the screen
-        absoluteFaceSize = (height);
+        this.height = height;
+        this.width = width;
     }
 
     @Override
@@ -126,7 +129,7 @@ public class OpenCVActivity extends Activity
         if (cascadeClassifier != null) {
 
             cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3,2,
-                    new Size(), new Size(absoluteFaceSize, absoluteFaceSize));
+                    new Size(width/6,height/6), new Size(width/1.2, height/1.2));
 //            cascadeClassifier.detectMultiScale(aInputFrame, faces);
         }
 
