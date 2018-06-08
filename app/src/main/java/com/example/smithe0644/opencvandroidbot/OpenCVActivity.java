@@ -1,13 +1,21 @@
 package com.example.smithe0644.opencvandroidbot;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.opencv.android.*;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
 import org.opencv.core.*;
@@ -17,12 +25,15 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Policy;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import android.os.ParcelFileDescriptor;
+
 
 public class OpenCVActivity extends Activity
         implements CvCameraViewListener {
@@ -35,9 +46,21 @@ public class OpenCVActivity extends Activity
     private int height;
     private int width;
 
+    IntentFilter usbFilter;
+
+    Boolean rP;
+
+    UsbAccessory megaADK;
+    UsbManager usbManager;
+    FileInputStream iS;
+    FileOutputStream oS;
+    ParcelFileDescriptor fileDescriptor;
+
+    private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
+
 
     //Stands for AVG x
-    private double lastAVGx;
+    private double lastAVGx = 0;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -49,6 +72,48 @@ public class OpenCVActivity extends Activity
                 default:
                     super.onManagerConnected(status);
                     break;
+            }
+        }
+    };
+
+    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (ACTION_USB_PERMISSION.equals(action)) {
+                synchronized (this) {
+                    //Theres only 1 accessory
+                    UsbAccessory accessory = usbManager.getAccessoryList()[0];
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        megaADK = accessory;
+                        setUp(megaADK);
+                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT);
+                    } else {
+                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT);
+
+                    }
+                    rP = false;
+                }
+            } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
+
+                UsbAccessory accessory = usbManager.getAccessoryList()[0];
+                if(accessory == null) Log.d("Detached", "accessory no longer findable");
+                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT);
+                oS = null;
+                iS = null;
+//              if (accessory != null && accessory.equals(megaADK)) {
+//                    closeAccessory();
+//              }
+            }else if(UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)){
+                UsbAccessory accessory = usbManager.getAccessoryList()[0];
+                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                    megaADK = accessory;
+                    setUp(megaADK);
+
+                } else {
+                    Log.d("MEGA ADK ", "Permission denied" + accessory);
+                }
+                rP = false;
             }
         }
     };
@@ -96,6 +161,10 @@ public class OpenCVActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        usbFilter = new IntentFilter(ACTION_USB_PERMISSION);
+        usbFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
+        usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -167,6 +236,9 @@ public class OpenCVActivity extends Activity
     public void onResume() {
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
+
+        registerReceiver(usbReceiver,usbFilter);
+
     }
 
     public double Calculations(Point tl, Point br){
@@ -248,6 +320,15 @@ public class OpenCVActivity extends Activity
 
 
         return dst;
+    }
+
+    public void setUp(UsbAccessory accessory) {
+        fileDescriptor = usbManager.openAccessory(accessory);
+        if (fileDescriptor != null) {
+            megaADK = accessory;
+            iS = new FileInputStream(fileDescriptor.getFileDescriptor());
+            oS = new FileOutputStream(fileDescriptor.getFileDescriptor());
+        }
     }
 
 }
