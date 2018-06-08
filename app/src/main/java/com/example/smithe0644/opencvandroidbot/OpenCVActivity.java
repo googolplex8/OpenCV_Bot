@@ -1,6 +1,7 @@
 package com.example.smithe0644.opencvandroidbot;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,6 +55,10 @@ public class OpenCVActivity extends Activity
     FileInputStream iS;
     FileOutputStream oS;
     ParcelFileDescriptor fileDescriptor;
+
+    PendingIntent permissionIntent;
+
+    Context context;
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
@@ -171,6 +176,7 @@ public class OpenCVActivity extends Activity
         setContentView(openCvCameraView);
         openCvCameraView.setCvCameraViewListener(this);
 
+        context = getApplicationContext();
     }
 
     @Override
@@ -237,7 +243,33 @@ public class OpenCVActivity extends Activity
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
 
         registerReceiver(usbReceiver,usbFilter);
-
+        if (iS != null && oS != null){
+            Toast.makeText(context,"is&&os null", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        //There sohuld only be 1 USB accessory which would be the Mega
+        if(usbManager==null){
+            Toast.makeText(context,"usbManager is null", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        UsbAccessory accessory = usbManager.getAccessoryList()[0];
+        if (accessory != null) {
+            if (usbManager.hasPermission(accessory)) {
+                setUp(accessory);
+            } else {
+                synchronized (usbReceiver) {
+                    if (!rP) {
+                        Toast.makeText(context, "requesting permission", Toast.LENGTH_SHORT).show();
+                        usbManager.requestPermission(accessory, permissionIntent);
+                        rP = true;
+                    }
+                }
+            }
+        } else {
+            Log.d("Android Accessory", "Accessory is null");
+            //Beginning USB
+            beginUsb();
+        }
     }
 
     public double Calculations(Point tl, Point br){
@@ -319,6 +351,23 @@ public class OpenCVActivity extends Activity
 
 
         return dst;
+    }
+
+    public void beginUsb(){
+        permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+
+        if(usbManager == null) usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        if(usbManager == null) return;
+        if(usbManager.getAccessoryList()==null){
+            Toast.makeText(context, "Accessory null from BeginUSB", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(megaADK != null) {
+            setUp(megaADK);
+        }else{
+            megaADK = usbManager.getAccessoryList()[0];
+            setUp(megaADK);
+        }
     }
 
     public void setUp(UsbAccessory accessory) {
