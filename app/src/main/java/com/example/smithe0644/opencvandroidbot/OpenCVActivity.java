@@ -29,6 +29,7 @@ public class OpenCVActivity extends Activity
 
     private CameraBridgeViewBase openCvCameraView;
     private CascadeClassifier cascadeClassifier;
+
     private Mat grayscaleImage;
 
     private int height;
