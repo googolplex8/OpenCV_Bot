@@ -276,11 +276,11 @@ public class OpenCVActivity extends Activity
     public double Calculations(Point tl, Point br){
         double avg = (tl.x+br.x)/2;
         if(avg>getAverage()){
-            //Move right
+            Right();
         }else if(avg < getAverage()){
-            //Move left
+            Left();
         }else{
-            //Don't move
+            Stop();
         }
         return avg;
     }
@@ -377,6 +377,42 @@ public class OpenCVActivity extends Activity
             megaADK = accessory;
             iS = new FileInputStream(fileDescriptor.getFileDescriptor());
             oS = new FileOutputStream(fileDescriptor.getFileDescriptor());
+        }
+    }
+
+    public void Right() {
+        byte[] buffer = {(byte)3, (byte)4};
+        if(oS!= null){
+            try {
+                Toast.makeText(this,"Right", Toast.LENGTH_SHORT).show();
+                oS.write(buffer);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void Left() {
+        byte[] buffer = {(byte)3, (byte)5};
+        if(oS!= null){
+            try {
+                Toast.makeText(this,"Left", Toast.LENGTH_SHORT).show();
+                oS.write(buffer);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void Stop() {
+        byte[] buffer = {(byte)3, (byte)6};
+        if(oS!= null){
+            try {
+                Toast.makeText(this,"Stop", Toast.LENGTH_SHORT).show();
+                oS.write(buffer);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
