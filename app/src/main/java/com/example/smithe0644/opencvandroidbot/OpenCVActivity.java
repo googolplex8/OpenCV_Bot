@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.security.Policy;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import android.os.ParcelFileDescriptor;
 
 
@@ -60,12 +61,12 @@ public class OpenCVActivity extends Activity
     PendingIntent permissionIntent;
 
     Context context;
+    Boolean firstTime;
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
-
-    //Stands for AVG x
     private double lastAVGx = 0;
+    private double lastSize = 0;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -92,9 +93,9 @@ public class OpenCVActivity extends Activity
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         megaADK = accessory;
                         setUp(megaADK);
-                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT);
+                        Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT);
                     } else {
-                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT);
+                        Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT);
 
                     }
                     rP = false;
@@ -102,14 +103,14 @@ public class OpenCVActivity extends Activity
             } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
 
                 UsbAccessory accessory = usbManager.getAccessoryList()[0];
-                if(accessory == null) Log.d("Detached", "accessory no longer findable");
-                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT);
+                if (accessory == null) Log.d("Detached", "accessory no longer findable");
+                Toast.makeText(context, "Accessory is detached", Toast.LENGTH_SHORT);
                 oS = null;
                 iS = null;
 //              if (accessory != null && accessory.equals(megaADK)) {
 //                    closeAccessory();
 //              }
-            }else if(UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)){
+            } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
                 UsbAccessory accessory = usbManager.getAccessoryList()[0];
                 if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                     megaADK = accessory;
@@ -149,9 +150,9 @@ public class OpenCVActivity extends Activity
 
             cascadeClassifier = new CascadeClassifier(path);
             cascadeClassifier.load(path);
-            if(cascadeClassifier.empty()){
+            if (cascadeClassifier.empty()) {
                 Log.d("cascadeClassifier", "is empty");
-            }else Log.d("cascadeClassifier", "not empty");
+            } else Log.d("cascadeClassifier", "not empty");
 
             cascadeDir.delete();
 
@@ -208,8 +209,8 @@ public class OpenCVActivity extends Activity
         // Use the classifier to detect faces
         if (cascadeClassifier != null) {
 
-            cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3,2,
-                    new Size(width/6,height/6), new Size(width/1.2, height/1.2));
+            cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3, 2,
+                    new Size(width / 6, height / 6), new Size(width / 1.2, height / 1.2));
 //            cascadeClassifier.detectMultiScale(aInputFrame, faces);
         }
 
@@ -218,16 +219,40 @@ public class OpenCVActivity extends Activity
         Rect[] facesArray = faces.toArray();
 
 
-        for (int i = 0; i <facesArray.length; i++) {
+        for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
-            if(facesArray.length==1){
-                setAverage(Calculations(facesArray[i].tl(),facesArray[i].br()));
+        }
+
+        if (facesArray.length == 1) {
+            if (!firstTime) {
+                Calculations(facesArray[0].tl(), facesArray[0].br());
+            } else {
+                firstTime = false;
             }
+            setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
+            setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
+        } else {
+            if (!firstTime) {
+                double minDist = (double) Integer.MAX_VALUE;
+                int index = 0;
+                for (int i = 0; i < facesArray.length; i++) {
+                    double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                    if (minDist > dist) {
+                        minDist = dist;
+                        index = i;
+                    }
+                }
+                Calculations(facesArray[index].tl(), facesArray[index].br());
+                setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+                setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
+            } else {
+                firstTime = false;
+            }
+
         }
 
 
-
-        if(facesArray.length>=1){
+        if (facesArray.length >= 1) {
             Log.d("face found", "we found a face mdudes");
             output(aInputFrame);
         }
@@ -243,14 +268,14 @@ public class OpenCVActivity extends Activity
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
 
-        registerReceiver(usbReceiver,usbFilter);
-        if (iS != null && oS != null){
-            Toast.makeText(context,"is&&os null", Toast.LENGTH_SHORT).show();
+        registerReceiver(usbReceiver, usbFilter);
+        if (iS != null && oS != null) {
+            Toast.makeText(context, "is&&os null", Toast.LENGTH_SHORT).show();
             return;
         }
         //There sohuld only be 1 USB accessory which would be the Mega
-        if(usbManager==null){
-            Toast.makeText(context,"usbManager is null", Toast.LENGTH_SHORT).show();
+        if (usbManager == null) {
+            Toast.makeText(context, "usbManager is null", Toast.LENGTH_SHORT).show();
             return;
         }
         UsbAccessory accessory = usbManager.getAccessoryList()[0];
@@ -273,20 +298,20 @@ public class OpenCVActivity extends Activity
         }
     }
 
-    public double Calculations(Point tl, Point br){
-        double avg = (tl.x+br.x)/2;
-        if(avg>getAverage()){
+    public double Calculations(Point tl, Point br) {
+        double avg = (tl.x + br.x) / 2;
+        if (avg > getAverage()) {
             Right();
-        }else if(avg < getAverage()){
+        } else if (avg < getAverage()) {
             Left();
-        }else{
+        } else {
             Stop();
         }
         return avg;
     }
 
 
-    public void output(Mat subimg){
+    public void output(Mat subimg) {
 
         Bitmap bmp = null;
         try {
@@ -304,7 +329,7 @@ public class OpenCVActivity extends Activity
 
 
         String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-        File pictureFileDir=new File(root);
+        File pictureFileDir = new File(root);
 
         if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
             pictureFileDir.mkdirs();
@@ -321,30 +346,45 @@ public class OpenCVActivity extends Activity
             FileOutputStream fos = new FileOutputStream(mainPicture);
             fos.write(byteArray);
             fos.close();
-            Log.d("kkkk","image saved");
+            Log.d("kkkk", "image saved");
         } catch (Exception error) {
-            Log.d("kkkk","Image could not be saved");
+            Log.d("kkkk", "Image could not be saved");
         }
 
     }
 
 
-    public double getAverage(){
+    public double getAverage() {
         return lastAVGx;
     }
 
-    public double setAverage(double avg){
+    public double getSize() {
+        return lastSize;
+    }
+
+    public double calcAverage(Point tl, Point br) {
+        return (tl.x + br.x) / 2;
+    }
+
+    public double calcSize(Point tl, Point br) {
+        return Math.abs((br.x - tl.x) * (br.y - tl.y));
+    }
+
+    public double setAverage(double avg) {
         return lastAVGx = avg;
     }
 
-    public static Mat rotate(Mat src, double angle)
-    {
+    public double setSize(double size) {
+        return lastSize = size;
+    }
+
+    public static Mat rotate(Mat src, double angle) {
         Mat dst = new Mat();
-        if(angle == 180 || angle == -180) {
+        if (angle == 180 || angle == -180) {
             Core.flip(src, dst, -1);
-        } else if(angle == 90 || angle == -270) {
+        } else if (angle == 90 || angle == -270) {
             Core.flip(src.t(), dst, 1);
-        } else if(angle == 270 || angle == -90) {
+        } else if (angle == 270 || angle == -90) {
             Core.flip(src.t(), dst, 0);
         }
 
@@ -354,18 +394,18 @@ public class OpenCVActivity extends Activity
         return dst;
     }
 
-    public void beginUsb(){
+    public void beginUsb() {
         permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
 
-        if(usbManager == null) usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        if(usbManager == null) return;
-        if(usbManager.getAccessoryList()==null){
+        if (usbManager == null) usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        if (usbManager == null) return;
+        if (usbManager.getAccessoryList() == null) {
             Toast.makeText(context, "Accessory null from BeginUSB", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(megaADK != null) {
+        if (megaADK != null) {
             setUp(megaADK);
-        }else{
+        } else {
             megaADK = usbManager.getAccessoryList()[0];
             setUp(megaADK);
         }
@@ -381,36 +421,36 @@ public class OpenCVActivity extends Activity
     }
 
     public void Right() {
-        byte[] buffer = {(byte)3, (byte)4};
-        if(oS!= null){
+        byte[] buffer = {(byte) 3, (byte) 4};
+        if (oS != null) {
             try {
-                Toast.makeText(this,"Right", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
                 oS.write(buffer);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
     public void Left() {
-        byte[] buffer = {(byte)3, (byte)5};
-        if(oS!= null){
+        byte[] buffer = {(byte) 3, (byte) 5};
+        if (oS != null) {
             try {
-                Toast.makeText(this,"Left", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
                 oS.write(buffer);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
     public void Stop() {
-        byte[] buffer = {(byte)3, (byte)6};
-        if(oS!= null){
+        byte[] buffer = {(byte) 3, (byte) 6};
+        if (oS != null) {
             try {
-                Toast.makeText(this,"Stop", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Stop", Toast.LENGTH_SHORT).show();
                 oS.write(buffer);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
