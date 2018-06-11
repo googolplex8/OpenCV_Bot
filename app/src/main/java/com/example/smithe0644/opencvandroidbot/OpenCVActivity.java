@@ -1,13 +1,13 @@
 package com.example.smithe0644.opencvandroidbot;
 
 import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
+//import android.app.PendingIntent;
+//import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
+//import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.hardware.usb.UsbAccessory;
+//import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,13 +26,13 @@ import org.opencv.objdetect.CascadeClassifier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+//import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.os.ParcelFileDescriptor;
+//import android.os.ParcelFileDescriptor;
 
 
 public class OpenCVActivity extends Activity
@@ -48,15 +48,17 @@ public class OpenCVActivity extends Activity
 
     IntentFilter usbFilter;
 
-    Boolean rP;
 
-    UsbAccessory megaADK;
-    UsbManager usbManager;
-    FileInputStream iS;
-    FileOutputStream oS;
-    ParcelFileDescriptor fileDescriptor;
-
-    PendingIntent permissionIntent;
+    //Used in USB connection, can do through the CLOUD so obsolete
+//    Boolean rP;
+//
+//    UsbAccessory megaADK;
+//    UsbManager usbManager;
+//    FileInputStream iS;
+//    FileOutputStream oS;
+//    ParcelFileDescriptor fileDescriptor;
+//
+//    PendingIntent permissionIntent;
 
     Context context;
     Boolean firstTime;
@@ -80,58 +82,47 @@ public class OpenCVActivity extends Activity
         }
     };
 
-    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (ACTION_USB_PERMISSION.equals(action)) {
-                synchronized (this) {
-                    //Theres only 1 accessory
-                    UsbAccessory accessory = usbManager.getAccessoryList()[0];
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        megaADK = accessory;
-                        setUp(megaADK);
-<<<<<<< HEAD
-                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT).show();
-=======
-                        Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT);
-                    } else {
-                        Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT);
->>>>>>> origin/master
-
-                    }
-                    rP = false;
-                }
-            } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
-
-                UsbAccessory accessory = usbManager.getAccessoryList()[0];
-<<<<<<< HEAD
-                if(accessory == null) Log.d("Detached", "accessory no longer findable");
-                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT).show();
-=======
-                if (accessory == null) Log.d("Detached", "accessory no longer findable");
-                Toast.makeText(context, "Accessory is detached", Toast.LENGTH_SHORT);
->>>>>>> origin/master
-                oS = null;
-                iS = null;
-//              if (accessory != null && accessory.equals(megaADK)) {
-//                    closeAccessory();
-//              }
-            } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
-                UsbAccessory accessory = usbManager.getAccessoryList()[0];
-                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                    megaADK = accessory;
-                    setUp(megaADK);
-
-                } else {
-                    Log.d("MEGA ADK ", "Permission denied" + accessory);
-                }
-                rP = false;
-            }
-        }
-    };
+//    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//            if (ACTION_USB_PERMISSION.equals(action)) {
+//                synchronized (this) {
+//                    //Theres only 1 accessory
+//                    UsbAccessory accessory = usbManager.getAccessoryList()[0];
+//                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+//                        megaADK = accessory;
+//                        setUp(megaADK);
+//                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT).show();
+//                    } else {
+//                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT).show();
+//                    }
+//                    rP = false;
+//                }
+//            } else if (UsbManager.ACTION_USB_ACCESSORY_DETACHED.equals(action)) {
+//
+//                UsbAccessory accessory = usbManager.getAccessoryList()[0];
+//                if(accessory == null) Log.d("Detached", "accessory no longer findable");
+//                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT).show();
+//
+//                oS = null;
+//                iS = null;
+////              if (accessory != null && accessory.equals(megaADK)) {
+////                    closeAccessory();
+////              }
+//            } else if (UsbManager.ACTION_USB_ACCESSORY_ATTACHED.equals(action)) {
+//                UsbAccessory accessory = usbManager.getAccessoryList()[0];
+//                if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+//                    megaADK = accessory;
+//                    setUp(megaADK);
+//
+//                } else {
+//                    Log.d("MEGA ADK ", "Permission denied" + accessory);
+//                }
+//                rP = false;
+//            }
+//        }
+//    };
 
     private void initializeOpenCVDependencies() {
         try {
@@ -205,16 +196,10 @@ public class OpenCVActivity extends Activity
 
 //        Mat aInputFrame = rotate(InputFrame, 90);
 
-        // Create a grayscale image
-
-//        Imgproc.cvtColor(aInputFrame, aInputFrame, Imgproc.COLOR_RGBA2GRAY);
-
-
         MatOfRect faces = new MatOfRect();
 
         // Use the classifier to detect faces
         if (cascadeClassifier != null) {
-
             cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3, 2,
                     new Size(width / 6, height / 6), new Size(width / 1.2, height / 1.2));
 //            cascadeClassifier.detectMultiScale(aInputFrame, faces);
@@ -278,39 +263,36 @@ public class OpenCVActivity extends Activity
         ////////////////////////////////
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
 
-        registerReceiver(usbReceiver, usbFilter);
-        if (iS != null && oS != null) {
-            Toast.makeText(context, "is&&os null", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        //There sohuld only be 1 USB accessory which would be the Mega
-        if (usbManager == null) {
-            Toast.makeText(context, "usbManager is null", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        UsbAccessory accessory = usbManager.getAccessoryList()[0];
-        if (accessory != null) {
-            if (usbManager.hasPermission(accessory)) {
-                setUp(accessory);
-            } else {
-                synchronized (usbReceiver) {
-                    if (!rP) {
-                        Toast.makeText(context, "requesting permission", Toast.LENGTH_SHORT).show();
-                        usbManager.requestPermission(accessory, permissionIntent);
-                        rP = true;
-                    }
-                }
-            }
-        } else {
-            Log.d("Android Accessory", "Accessory is null");
-            //Beginning USB
-            beginUsb();
-        }
+//        registerReceiver(usbReceiver, usbFilter);
+//        if (iS != null && oS != null) {
+//            Toast.makeText(context, "is&&os null", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//        //There sohuld only be 1 USB accessory which would be the Mega
+//        if (usbManager == null) {
+//            Toast.makeText(context, "usbManager is null", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//        UsbAccessory accessory = usbManager.getAccessoryList()[0];
+//        if (accessory != null) {
+//            if (usbManager.hasPermission(accessory)) {
+//                setUp(accessory);
+//            } else {
+//                synchronized (usbReceiver) {
+//                    if (!rP) {
+//                        Toast.makeText(context, "requesting permission", Toast.LENGTH_SHORT).show();
+//                        usbManager.requestPermission(accessory, permissionIntent);
+//                        rP = true;
+//                    }
+//                }
+//            }
+//        } else {
+//            Log.d("Android Accessory", "Accessory is null");
+//            //Beginning USB
+//            beginUsb();
+//        }
         ///////////////////////////////////////
         ///////////////////////////////////////
-
-
-
 
     }
 
@@ -338,6 +320,7 @@ public class OpenCVActivity extends Activity
         }
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
 
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
@@ -375,10 +358,7 @@ public class OpenCVActivity extends Activity
         return lastAVGx;
     }
 
-<<<<<<< HEAD
 
-    public double setAverage(double avg){
-=======
     public double getSize() {
         return lastSize;
     }
@@ -392,7 +372,6 @@ public class OpenCVActivity extends Activity
     }
 
     public double setAverage(double avg) {
->>>>>>> origin/master
         return lastAVGx = avg;
     }
 
@@ -416,33 +395,31 @@ public class OpenCVActivity extends Activity
         return dst;
     }
 
-    public void beginUsb() {
-        permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-
-        if (usbManager == null) usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        if (usbManager == null) return;
-        if (usbManager.getAccessoryList() == null) {
-            Toast.makeText(context, "Accessory null from BeginUSB", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (megaADK != null) {
-            setUp(megaADK);
-        } else {
-            megaADK = usbManager.getAccessoryList()[0];
-            setUp(megaADK);
-        }
-    }
-
-    public void setUp(UsbAccessory accessory) {
-        fileDescriptor = usbManager.openAccessory(accessory);
-        if (fileDescriptor != null) {
-            megaADK = accessory;
-            iS = new FileInputStream(fileDescriptor.getFileDescriptor());
-            oS = new FileOutputStream(fileDescriptor.getFileDescriptor());
-        }
-    }
-
-<<<<<<< HEAD
+//    public void beginUsb() {
+//        permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+//
+//        if (usbManager == null) usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+//        if (usbManager == null) return;
+//        if (usbManager.getAccessoryList() == null) {
+//            Toast.makeText(context, "Accessory null from BeginUSB", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//        if (megaADK != null) {
+//            setUp(megaADK);
+//        } else {
+//            megaADK = usbManager.getAccessoryList()[0];
+//            setUp(megaADK);
+//        }
+//    }
+//
+//    public void setUp(UsbAccessory accessory) {
+//        fileDescriptor = usbManager.openAccessory(accessory);
+//        if (fileDescriptor != null) {
+//            megaADK = accessory;
+//            iS = new FileInputStream(fileDescriptor.getFileDescriptor());
+//            oS = new FileOutputStream(fileDescriptor.getFileDescriptor());
+//        }
+//    }
 
     //Obsolete USB code, possibly use in case of backup
 
@@ -492,46 +469,45 @@ public class OpenCVActivity extends Activity
         mqttManager.publish("Topic", buffer,2,false);
     }
 
-    private void Stop(){
-        byte[] buffer = {(byte)'a', (byte)'c'};
-        mqttManager.publish("Topic", buffer,2,false);
-=======
-    public void Right() {
-        byte[] buffer = {(byte) 3, (byte) 4};
-        if (oS != null) {
-            try {
-                Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    private void Stop() {
+            byte[] buffer = {(byte) 'a', (byte) 'c'};mqttManager.publish("Topic", buffer, 2, false);
     }
 
-    public void Left() {
-        byte[] buffer = {(byte) 3, (byte) 5};
-        if (oS != null) {
-            try {
-                Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void Stop() {
-        byte[] buffer = {(byte) 3, (byte) 6};
-        if (oS != null) {
-            try {
-                Toast.makeText(this, "Stop", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
->>>>>>> origin/master
-    }
+//    public void Right() {
+//        byte[] buffer = {(byte) 3, (byte) 4};
+//        if (oS != null) {
+//            try {
+//                Toast.makeText(this, "Right", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public void Left() {
+//        byte[] buffer = {(byte) 3, (byte) 5};
+//        if (oS != null) {
+//            try {
+//                Toast.makeText(this, "Left", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public void Stop() {
+//        byte[] buffer = {(byte) 3, (byte) 6};
+//        if (oS != null) {
+//            try {
+//                Toast.makeText(this, "Stop", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     private void beginMqtt(){
         mqttManager = new MqttHelper(getApplicationContext());
