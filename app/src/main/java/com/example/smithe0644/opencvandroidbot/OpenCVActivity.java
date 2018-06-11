@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
@@ -14,13 +13,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.opencv.android.*;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
 import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 
@@ -28,9 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.Policy;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import android.os.ParcelFileDescriptor;
@@ -42,10 +40,10 @@ public class OpenCVActivity extends Activity
     private CameraBridgeViewBase openCvCameraView;
     private CascadeClassifier cascadeClassifier;
 
-    private Mat grayscaleImage;
-
     private int height;
     private int width;
+
+    MqttHelper mqttManager;
 
     IntentFilter usbFilter;
 
@@ -92,9 +90,9 @@ public class OpenCVActivity extends Activity
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         megaADK = accessory;
                         setUp(megaADK);
-                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT);
+                        Toast.makeText(context,"Permission Granted", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT);
+                        Toast.makeText(context,"Permission denied", Toast.LENGTH_SHORT).show();
 
                     }
                     rP = false;
@@ -103,7 +101,7 @@ public class OpenCVActivity extends Activity
 
                 UsbAccessory accessory = usbManager.getAccessoryList()[0];
                 if(accessory == null) Log.d("Detached", "accessory no longer findable");
-                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT);
+                Toast.makeText(context,"Accessory is detached", Toast.LENGTH_SHORT).show();
                 oS = null;
                 iS = null;
 //              if (accessory != null && accessory.equals(megaADK)) {
@@ -136,7 +134,6 @@ public class OpenCVActivity extends Activity
             int bytesRead;
             while ((bytesRead = is.read(buffer)) != -1) {
                 os.write(buffer, 0, bytesRead);
-                Log.d("Buffer: ", buffer.toString());
             }
             is.close();
             os.close();
@@ -153,7 +150,6 @@ public class OpenCVActivity extends Activity
                 Log.d("cascadeClassifier", "is empty");
             }else Log.d("cascadeClassifier", "not empty");
 
-            cascadeDir.delete();
 
         } catch (Exception e) {
             Log.e("OpenCVActivity", "Error loading cascade", e);
@@ -178,12 +174,11 @@ public class OpenCVActivity extends Activity
         openCvCameraView.setCvCameraViewListener(this);
 
         context = getApplicationContext();
+        beginMqtt();
     }
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        grayscaleImage = new Mat(height, width, CvType.CV_8UC4);
-
         // The faces will be a 20% of the height of the screen
         this.height = height;
         this.width = width;
@@ -241,6 +236,10 @@ public class OpenCVActivity extends Activity
     @Override
     public void onResume() {
         super.onResume();
+
+
+        ////////////////////////////////
+        ////////////////////////////////
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mLoaderCallback);
 
         registerReceiver(usbReceiver,usbFilter);
@@ -271,6 +270,12 @@ public class OpenCVActivity extends Activity
             //Beginning USB
             beginUsb();
         }
+        ///////////////////////////////////////
+        ///////////////////////////////////////
+
+
+
+
     }
 
     public double Calculations(Point tl, Point br){
@@ -297,6 +302,7 @@ public class OpenCVActivity extends Activity
         }
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
 
 
@@ -332,6 +338,7 @@ public class OpenCVActivity extends Activity
     public double getAverage(){
         return lastAVGx;
     }
+
 
     public double setAverage(double avg){
         return lastAVGx = avg;
@@ -380,40 +387,83 @@ public class OpenCVActivity extends Activity
         }
     }
 
-    public void Right() {
-        byte[] buffer = {(byte)3, (byte)4};
-        if(oS!= null){
-            try {
-                Toast.makeText(this,"Right", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+
+    //Obsolete USB code, possibly use in case of backup
+
+//    public void Right() {
+//        byte[] buffer = {(byte)3, (byte)4};
+//        if(oS!= null){
+//            try {
+//                Toast.makeText(this,"Right", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public void Left() {
+//        byte[] buffer = {(byte)3, (byte)5};
+//        if(oS!= null){
+//            try {
+//                Toast.makeText(this,"Left", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+//
+//    public void Stop() {
+//        byte[] buffer = {(byte)3, (byte)6};
+//        if(oS!= null){
+//            try {
+//                Toast.makeText(this,"Stop", Toast.LENGTH_SHORT).show();
+//                oS.write(buffer);
+//            }catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
+    private void Left(){
+        byte[] buffer = {(byte)'a', (byte)'b'};
+        mqttManager.publish("Topic", buffer,2,false);
     }
 
-    public void Left() {
-        byte[] buffer = {(byte)3, (byte)5};
-        if(oS!= null){
-            try {
-                Toast.makeText(this,"Left", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+    private void Right(){
+        byte[] buffer = {(byte)'a', (byte)'c'};
+        mqttManager.publish("Topic", buffer,2,false);
     }
 
-    public void Stop() {
-        byte[] buffer = {(byte)3, (byte)6};
-        if(oS!= null){
-            try {
-                Toast.makeText(this,"Stop", Toast.LENGTH_SHORT).show();
-                oS.write(buffer);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
+    private void Stop(){
+        byte[] buffer = {(byte)'a', (byte)'c'};
+        mqttManager.publish("Topic", buffer,2,false);
     }
 
+    private void beginMqtt(){
+        mqttManager = new MqttHelper(getApplicationContext());
+        mqttManager.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverURI) {
+
+            }
+
+            @Override
+            public void connectionLost(Throwable cause) {
+
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+
+                Toast.makeText(context, message.toString(),Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+    }
 }
