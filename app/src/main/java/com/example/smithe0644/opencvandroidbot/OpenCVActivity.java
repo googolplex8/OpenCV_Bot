@@ -214,33 +214,22 @@ public class OpenCVActivity extends Activity
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
         }
 
-        if (facesArray.length == 1) {
-            if (!firstTime) {
-                Calculations(facesArray[0].tl(), facesArray[0].br());
-            } else {
-                firstTime = false;
+        int index = 0;
+        double minDist = (double) Integer.MAX_VALUE;
+        for (int i = 0; i < facesArray.length; i++) {
+            double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
+            if (minDist > dist) {
+                minDist = dist;
+                index = i;
             }
-            setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
-            setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
-        } else {
-            if (!firstTime) {
-                double minDist = (double) Integer.MAX_VALUE;
-                int index = 0;
-                for (int i = 0; i < facesArray.length; i++) {
-                    double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
-                    if (minDist > dist) {
-                        minDist = dist;
-                        index = i;
-                    }
-                }
-                Calculations(facesArray[index].tl(), facesArray[index].br());
-                setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
-                setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
-            } else {
-                firstTime = false;
-            }
-
         }
+        if (!firstTime) {
+            Calculations(facesArray[index].tl(), facesArray[index].br());
+        } else {
+            firstTime = false;
+        }
+        setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+        setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
 
 
         if (facesArray.length >= 1) {
@@ -459,18 +448,19 @@ public class OpenCVActivity extends Activity
 //        }
 //    }
 
-    private void Left(){
-        byte[] buffer = {(byte)'a', (byte)'b'};
-        mqttManager.publish("Topic", buffer,2,false);
+    private void Left() {
+        byte[] buffer = {(byte) 'a', (byte) 'b'};
+        mqttManager.publish("Topic", buffer, 2, false);
     }
 
-    private void Right(){
-        byte[] buffer = {(byte)'a', (byte)'c'};
-        mqttManager.publish("Topic", buffer,2,false);
+    private void Right() {
+        byte[] buffer = {(byte) 'a', (byte) 'c'};
+        mqttManager.publish("Topic", buffer, 2, false);
     }
 
     private void Stop() {
-            byte[] buffer = {(byte) 'a', (byte) 'c'};mqttManager.publish("Topic", buffer, 2, false);
+        byte[] buffer = {(byte) 'a', (byte) 'c'};
+        mqttManager.publish("Topic", buffer, 2, false);
     }
 
 //    public void Right() {
@@ -509,7 +499,7 @@ public class OpenCVActivity extends Activity
 //        }
 //    }
 
-    private void beginMqtt(){
+    private void beginMqtt() {
         mqttManager = new MqttHelper(getApplicationContext());
         mqttManager.setCallback(new MqttCallbackExtended() {
             @Override
@@ -525,7 +515,7 @@ public class OpenCVActivity extends Activity
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
 
-                Toast.makeText(context, message.toString(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, message.toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
