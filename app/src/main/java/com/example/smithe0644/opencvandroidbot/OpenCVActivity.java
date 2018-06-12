@@ -61,7 +61,7 @@ public class OpenCVActivity extends Activity
 //    PendingIntent permissionIntent;
 
     Context context;
-    Boolean firstTime;
+    Boolean firstTime = true;
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
@@ -213,24 +213,24 @@ public class OpenCVActivity extends Activity
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
         }
-
-        int index = 0;
-        double minDist = (double) Integer.MAX_VALUE;
-        for (int i = 0; i < facesArray.length; i++) {
-            double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
-            if (minDist > dist) {
-                minDist = dist;
-                index = i;
+        if (facesArray.length > 0) {
+            int index = 0;
+            double minDist = (double) Integer.MAX_VALUE;
+            for (int i = 0; i < facesArray.length; i++) {
+                double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                if (minDist > dist) {
+                    minDist = dist;
+                    index = i;
+                }
             }
+            if (!firstTime) {
+                Calculations(facesArray[index].tl(), facesArray[index].br());
+            } else {
+                firstTime = false;
+            }
+            setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+            setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
         }
-        if (!firstTime) {
-            Calculations(facesArray[index].tl(), facesArray[index].br());
-        } else {
-            firstTime = false;
-        }
-        setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
-        setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
-
 
         if (facesArray.length >= 1) {
             Log.d("face found", "we found a face mdudes");
