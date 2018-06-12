@@ -514,8 +514,8 @@ public class OpenCVActivity extends Activity
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-
-                Toast.makeText(context, message.toString(), Toast.LENGTH_SHORT).show();
+                Log.d(topic,message.toString());
+//                Toast.makeText(context, message.toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
