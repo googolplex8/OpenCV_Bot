@@ -208,28 +208,31 @@ public class OpenCVActivity extends Activity
 
         // If there are any faces found, draw a rectangle around it
         Rect[] facesArray = faces.toArray();
-
-
         for (int i = 0; i < facesArray.length; i++) {
             Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
         }
-        if (facesArray.length > 0) {
-            int index = 0;
-            double minDist = (double) Integer.MAX_VALUE;
-            for (int i = 0; i < facesArray.length; i++) {
-                double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
-                if (minDist > dist) {
-                    minDist = dist;
-                    index = i;
+
+        if (!firstTime) {
+            if (facesArray.length > 0) {
+                int index = 0;
+                double minDist = (double) Integer.MAX_VALUE;
+                for (int i = 0; i < facesArray.length; i++) {
+                    double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                    if (minDist > dist) {
+                        minDist = dist;
+                        index = i;
+                    }
+                }
+                Calculations(facesArray[index].tl(), facesArray[index].br());
+                setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+                setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
+            } else {
+                if (facesArray.length == 1) {
+                    firstTime = false;
+                    setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                    setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
                 }
             }
-            if (!firstTime) {
-                Calculations(facesArray[index].tl(), facesArray[index].br());
-            } else {
-                firstTime = false;
-            }
-            setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
-            setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
         }
 
         if (facesArray.length >= 1) {
