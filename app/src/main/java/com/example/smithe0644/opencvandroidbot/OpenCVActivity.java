@@ -449,18 +449,18 @@ public class OpenCVActivity extends Activity
 //    }
 
     private void Left() {
-        byte[] buffer = {(byte) 'a', (byte) 'b'};
-        mqttManager.publish("Topic", buffer, 2, false);
+        byte[] buffer = {(byte) 'a', (byte) 'a'};
+        mqttManager.publish("Commands", buffer, 2, false);
     }
 
     private void Right() {
-        byte[] buffer = {(byte) 'a', (byte) 'c'};
-        mqttManager.publish("Topic", buffer, 2, false);
+        byte[] buffer = {(byte) 'a', (byte) 'b'};
+        mqttManager.publish("Commands", buffer, 2, false);
     }
 
     private void Stop() {
         byte[] buffer = {(byte) 'a', (byte) 'c'};
-        mqttManager.publish("Topic", buffer, 2, false);
+        mqttManager.publish("Commands", buffer, 2, false);
     }
 
 //    public void Right() {
