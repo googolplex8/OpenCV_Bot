@@ -213,7 +213,9 @@ public class OpenCVActivity extends Activity
         }
 
         if (!firstTime) {
+//            Log.d("!firsttime", "first");
             if (facesArray.length > 0) {
+//                Log.d("faces array", "bigger than 1");
                 int index = 0;
                 double minDist = (double) Integer.MAX_VALUE;
                 for (int i = 0; i < facesArray.length; i++) {
@@ -226,17 +228,18 @@ public class OpenCVActivity extends Activity
                 Calculations(facesArray[index].tl(), facesArray[index].br());
                 setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
                 setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
-            } else {
-                if (facesArray.length == 1) {
-                    firstTime = false;
-                    setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
-                    setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
-                }
+            }
+        } else {
+            if (facesArray.length == 1) {
+                firstTime = false;
+                setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
             }
         }
 
+
         if (facesArray.length >= 1) {
-            Log.d("face found", "we found a face mdudes");
+//            Log.d("face found", "we found a face mdudes");
             output(aInputFrame);
         }
 
@@ -291,11 +294,11 @@ public class OpenCVActivity extends Activity
     public double Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
         if (avg > getAverage()) {
-            Right();
+            MovingLeft();
         } else if (avg < getAverage()) {
-            Left();
+            MovingRight();
         } else {
-            Stop();
+            Stopped();
         }
         return avg;
     }
@@ -451,18 +454,21 @@ public class OpenCVActivity extends Activity
 //        }
 //    }
 
-    private void Left() {
-        byte[] buffer = {(byte) 'a', (byte) 'a'};
+    private void MovingLeft() {
+        byte[] buffer = {(byte) 'l', (byte) 'e', (byte) 'f', (byte) 't'};
+        Log.d("Left", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
-    private void Right() {
-        byte[] buffer = {(byte) 'a', (byte) 'b'};
+    private void MovingRight() {
+        byte[] buffer = {(byte) 'r', (byte) 'i', (byte) 'g', (byte) 'h', (byte) 't'};
+        Log.d("Left", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
-    private void Stop() {
-        byte[] buffer = {(byte) 'a', (byte) 'c'};
+    private void Stopped() {
+        byte[] buffer = {(byte) 's', (byte) 't', (byte) 'o', (byte) 'p', (byte) 'p', (byte) 'e', (byte) 'd'};
+        Log.d("Left", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
