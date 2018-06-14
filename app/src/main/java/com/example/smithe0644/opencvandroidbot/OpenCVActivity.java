@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 //import android.os.ParcelFileDescriptor;
@@ -63,6 +64,7 @@ public class OpenCVActivity extends Activity
     Context context;
     Boolean firstTime = true;
     int counter = 0;
+    ArrayList<Double> pastFrames = new ArrayList<Double>();
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
@@ -199,6 +201,7 @@ public class OpenCVActivity extends Activity
         counter++;
         if (counter > 150) {
             firstTime = true;
+            pastFrames.clear();
         }
         MatOfRect faces = new MatOfRect();
 
@@ -229,14 +232,19 @@ public class OpenCVActivity extends Activity
                         index = i;
                     }
                 }
-                Calculations(facesArray[index].tl(), facesArray[index].br());
-                setAverage(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+                pastFrames.add(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+                if (pastFrames.size() > 5) {
+                    pastFrames.remove(0);
+                }
+                if(pastFrames.size() == 5) {
+                    Calculations(facesArray[index].tl(), facesArray[index].br());
+                }
                 setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
             }
         } else {
             if (facesArray.length == 1) {
                 firstTime = false;
-                setAverage(calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                pastFrames.add(calcAverage(facesArray[0].tl(), facesArray[0].br()));
                 setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
             }
         }
@@ -297,8 +305,8 @@ public class OpenCVActivity extends Activity
 
     public double Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
-        double errorBound = 0.3 * (getSize());
-        double dif = Math.abs(getAverage() - avg);
+        double errorBound = 0.2 * (getSize());
+        double dif = Math.abs(pastFrames.get(0) - pastFrames.get(4));
 
         if (avg > getAverage() && dif > errorBound) {
             MovingLeft();
@@ -357,7 +365,7 @@ public class OpenCVActivity extends Activity
 
 
     public double getAverage() {
-        return lastAVGx;
+        return pastFrames.get(0);
     }
 
 
@@ -373,9 +381,9 @@ public class OpenCVActivity extends Activity
         return Math.abs((br.x - tl.x) * (br.y - tl.y));
     }
 
-    public double setAverage(double avg) {
-        return lastAVGx = avg;
-    }
+//    public double setAverage(double avg) {
+//        return lastAVGx = avg;
+//    }
 
     public double setSize(double size) {
         return lastSize = size;
