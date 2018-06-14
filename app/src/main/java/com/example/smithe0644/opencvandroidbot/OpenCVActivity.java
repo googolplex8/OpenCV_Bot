@@ -62,6 +62,7 @@ public class OpenCVActivity extends Activity
 
     Context context;
     Boolean firstTime = true;
+    int counter = 0;
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
@@ -195,7 +196,10 @@ public class OpenCVActivity extends Activity
     public Mat onCameraFrame(Mat aInputFrame) {
 
 //        Mat aInputFrame = rotate(InputFrame, 90);
-
+        counter++;
+        if (counter > 150) {
+            firstTime = true;
+        }
         MatOfRect faces = new MatOfRect();
 
         // Use the classifier to detect faces
@@ -293,12 +297,12 @@ public class OpenCVActivity extends Activity
 
     public double Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
-        double errorBound = 0.1*(getSize());
-        double dif = Math.abs(getAverage()-avg);
+        double errorBound = 0.3 * (getSize());
+        double dif = Math.abs(getAverage() - avg);
 
-        if (avg > getAverage() && dif>errorBound ) {
+        if (avg > getAverage() && dif > errorBound) {
             MovingLeft();
-        } else if (avg < getAverage()&& dif>errorBound) {
+        } else if (avg < getAverage() && dif > errorBound) {
             MovingRight();
         } else {
             Stopped();
@@ -526,7 +530,7 @@ public class OpenCVActivity extends Activity
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
-                Log.d(topic,message.toString());
+                Log.d(topic, message.toString());
 //                Toast.makeText(context, message.toString(), Toast.LENGTH_SHORT).show();
             }
 
