@@ -293,9 +293,12 @@ public class OpenCVActivity extends Activity
 
     public double Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
-        if (avg > getAverage()) {
+        double errorBound = 0.1*(getSize());
+        double dif = Math.abs(getAverage()-avg);
+
+        if (avg > getAverage() && dif>errorBound ) {
             MovingLeft();
-        } else if (avg < getAverage()) {
+        } else if (avg < getAverage()&& dif>errorBound) {
             MovingRight();
         } else {
             Stopped();
