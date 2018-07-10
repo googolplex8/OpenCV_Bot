@@ -209,53 +209,56 @@ public class OpenCVActivity extends Activity
         if (cascadeClassifier != null) {
             cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3, 2,
                     new Size(width / 6, height / 6), new Size(width / 1.2, height / 1.2));
+            counter = 0;
 //            cascadeClassifier.detectMultiScale(aInputFrame, faces);
         }
 
 
         // If there are any faces found, draw a rectangle around it
         Rect[] facesArray = faces.toArray();
-        for (int i = 0; i < facesArray.length; i++) {
-            Imgproc.rectangle(aInputFrame, facesArray[i].tl(), facesArray[i].br(), new Scalar(0, 255, 0, 255), 3);
+        for (Rect face:facesArray) {
+            Imgproc.rectangle(aInputFrame, face.tl(), face.br(), new Scalar(0, 255, 0, 255), 3);
         }
 
-        if (!firstTime) {
-//            Log.d("!firsttime", "first");
-            if (facesArray.length > 0) {
-//                Log.d("faces array", "bigger than 1");
-                int index = 0;
-                double minDist = (double) Integer.MAX_VALUE;
-                for (int i = 0; i < facesArray.length; i++) {
-                    double dist = Math.abs(getAverage() - calcAverage(facesArray[0].tl(), facesArray[0].br()));
-                    if (minDist > dist) {
-                        minDist = dist;
-                        index = i;
+        if(facesArray.length > 0) {
+
+            //We have to check if it is the first time to be able to get a reading on where the face is
+
+            if (!firstTime) {
+                Rect optimal = facesArray[0];
+                if (facesArray.length > 1) {
+
+                    //This will find the closest rectangle to one the previous face in the case that many is detected
+
+                    double minDist = (double) Integer.MAX_VALUE;
+                    for (Rect current : facesArray) {
+                        double dist = Math.abs(getAverage() - calcAverage(current.tl(), current.br()));
+                        if (minDist > dist) {
+                            minDist = dist;
+                            optimal = current;
+                        }
                     }
                 }
-                pastFrames.add(calcAverage(facesArray[index].tl(), facesArray[index].br()));
+
+                //Add the average x position
+                pastFrames.add(calcAverage(optimal.tl(), optimal.br()));
                 if (pastFrames.size() > 5) {
                     pastFrames.remove(0);
+                    Calculations(optimal.tl(), optimal.br());
                 }
-                if(pastFrames.size() == 5) {
-                    Calculations(facesArray[index].tl(), facesArray[index].br());
+
+                setSize(calcSize(optimal.tl(), optimal.br()));
+
+            } else {
+                if (facesArray.length == 1) {
+                    firstTime = false;
+                    pastFrames.add(calcAverage(facesArray[0].tl(), facesArray[0].br()));
+                    setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
                 }
-                setSize(calcSize(facesArray[index].tl(), facesArray[index].br()));
             }
-        } else {
-            if (facesArray.length == 1) {
-                firstTime = false;
-                pastFrames.add(calcAverage(facesArray[0].tl(), facesArray[0].br()));
-                setSize(calcSize(facesArray[0].tl(), facesArray[0].br()));
-            }
-        }
-
-
-        if (facesArray.length >= 1) {
-//            Log.d("face found", "we found a face mdudes");
             output(aInputFrame);
         }
 
-//        output(aInputFrame);
 //        aInputFrame = rotate(InputFrame, 270);
 
         return aInputFrame;
