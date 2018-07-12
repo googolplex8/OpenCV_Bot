@@ -1,16 +1,22 @@
 package com.example.smithe0644.opencvandroidbot;
 
+import android.Manifest;
 import android.app.Activity;
 //import android.app.PendingIntent;
 //import android.content.BroadcastReceiver;
+import android.app.AlertDialog;
 import android.content.Context;
 //import android.content.Intent;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 //import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -85,6 +91,42 @@ public class OpenCVActivity extends Activity
         }
     };
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    Log.d("onRequestPermissions","Permissions denied what the fuck");
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+    }
+
+    private void showExplanation(String title, String message, final String permission, final int permissionRequestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title).setMessage(message).setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                requestPermission(permission, permissionRequestCode);
+                }});
+        builder.create().show();
+    }
+
+    private void requestPermission(String permissionName, int permissionRequestCode) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{permissionName}, permissionRequestCode);
+    }
 //    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
@@ -167,6 +209,26 @@ public class OpenCVActivity extends Activity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d("Camera Permission", "Permission not granted, in onCreate");
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                Log.d("Should show rationale","in this block");
+                showExplanation("Permission needed","janky hack to get this to work",Manifest.permission.CAMERA,1);
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {
+                // No explanation needed; request the permission
+                Log.d("no rationale needed","here");
+                requestPermission(Manifest.permission.CAMERA, 1);
+            }
+        }
         super.onCreate(savedInstanceState);
 
         usbFilter = new IntentFilter(ACTION_USB_PERMISSION);
@@ -199,7 +261,7 @@ public class OpenCVActivity extends Activity
 
 //        Mat aInputFrame = rotate(InputFrame, 90);
         counter++;
-        if (counter > 150) {
+        if (counter > 20) {
             firstTime = true;
             pastFrames.clear();
         }
@@ -209,7 +271,6 @@ public class OpenCVActivity extends Activity
         if (cascadeClassifier != null) {
             cascadeClassifier.detectMultiScale(aInputFrame, faces, 1.1, 3, 2,
                     new Size(width / 6, height / 6), new Size(width / 1.2, height / 1.2));
-            counter = 0;
 //            cascadeClassifier.detectMultiScale(aInputFrame, faces);
         }
 
@@ -221,11 +282,13 @@ public class OpenCVActivity extends Activity
         }
 
         if(facesArray.length > 0) {
+            counter = 0;
 
             //We have to check if it is the first time to be able to get a reading on where the face is
 
             if (!firstTime) {
                 Rect optimal = facesArray[0];
+
                 if (facesArray.length > 1) {
 
                     //This will find the closest rectangle to one the previous face in the case that many is detected
@@ -239,10 +302,9 @@ public class OpenCVActivity extends Activity
                         }
                     }
                 }
-
                 //Add the average x position
                 pastFrames.add(calcAverage(optimal.tl(), optimal.br()));
-                if (pastFrames.size() > 5) {
+                if (pastFrames.size() > 10) {
                     pastFrames.remove(0);
                     Calculations(optimal.tl(), optimal.br());
                 }
@@ -308,21 +370,28 @@ public class OpenCVActivity extends Activity
 
     public double Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
-        double errorBound = 0.2 * (getSize());
-        double dif = Math.abs(pastFrames.get(0) - pastFrames.get(4));
+        double errorBound = 0.002 * (getSize());
+        double oldAvg = getAverage();
+        double dif = Math.abs(oldAvg-avg);
 
-        if (avg > getAverage() && dif > errorBound) {
+        if (avg > oldAvg && dif > errorBound) {
+            Log.d("Values", "avg = "+String.valueOf(avg) + " , oldAvg = " + String.valueOf(oldAvg));
+            Log.d("Values", "dif = " + String.valueOf(dif) + " , errorBound = " + String.valueOf(errorBound));
             MovingLeft();
-        } else if (avg < getAverage() && dif > errorBound) {
+        } else if (avg < oldAvg && dif > errorBound) {
+            Log.d("Values", "avg = "+String.valueOf(avg) + " , oldAvg = " + String.valueOf(oldAvg));
+            Log.d("Values", "dif = " + String.valueOf(dif) + " , errorBound = " + String.valueOf(errorBound));
             MovingRight();
         } else {
+            Log.d("Values", "avg = "+String.valueOf(avg) + " , oldAvg = " + String.valueOf(oldAvg));
+            Log.d("Values", "dif = " + String.valueOf(dif) + " , errorBound = " + String.valueOf(errorBound));
             Stopped();
         }
         return avg;
     }
 
 
-    public void output(Mat subimg) {
+    public void output(Mat subimg) throws NullPointerException{
 
         Bitmap bmp = null;
         try {
@@ -334,9 +403,11 @@ public class OpenCVActivity extends Activity
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-
-        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-
+        try {
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        }catch(NullPointerException e){
+            e.printStackTrace();
+        }
 
         byte[] byteArray = stream.toByteArray();
 
@@ -473,20 +544,21 @@ public class OpenCVActivity extends Activity
 //    }
 
     private void MovingLeft() {
-        byte[] buffer = {(byte) 'l', (byte) 'e', (byte) 'f', (byte) 't'};
+        byte[] buffer = "left".getBytes();
         Log.d("Left", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
     private void MovingRight() {
-        byte[] buffer = {(byte) 'r', (byte) 'i', (byte) 'g', (byte) 'h', (byte) 't'};
-        Log.d("Left", "  published");
+        byte[] buffer = "right".getBytes();
+        Log.d("Right", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
     private void Stopped() {
-        byte[] buffer = {(byte) 's', (byte) 't', (byte) 'o', (byte) 'p', (byte) 'p', (byte) 'e', (byte) 'd'};
-        Log.d("Left", "  published");
+        byte[] buffer = "stopped".getBytes();
+        counter = 0;
+        Log.d("Stopped", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
 

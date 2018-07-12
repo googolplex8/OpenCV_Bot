@@ -25,7 +25,7 @@ public class MqttHelper {
     static final String serverUri = "tcp://m10.cloudmqtt.com:15345";
 
     static final String clientId = "AndroidClient";
-    static final String subscriptionTopic = "Topic";
+    static final String subscriptionTopic = "Commands";
 
     static String username = "Android";
     static String password = "bean";
@@ -80,6 +80,7 @@ public class MqttHelper {
                     failparams.setPersistBuffer(false);
                     failparams.setDeleteOldestMessages(false);
                     mqttAndroidClient.setBufferOpts(failparams);
+                    publish(subscriptionTopic,"hello Android".getBytes(), 0, false);
                     subscribe();
                 }
 
