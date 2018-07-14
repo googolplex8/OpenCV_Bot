@@ -15,20 +15,20 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 /**
  * Created by WILLIAM LIN on 4/4/2018 for the Android Robot Controller.
- * THIS IS PROBABLY A USEFUL CLASS
+ * This class is used to do the MQTT process
  */
 
 public class MqttHelper {
 
     public MqttAndroidClient mqttAndroidClient;
 
-    static final String serverUri = "tcp://m10.cloudmqtt.com:15345";
+    private static final String serverUri = "tcp://m10.cloudmqtt.com:15345";
 
-    static final String clientId = "AndroidClient";
-    static final String subscriptionTopic = "Commands";
+    private static final String clientId = "AndroidClient";
+    private static final String subscriptionTopic = "Commands";
 
-    static String username = "Android";
-    static String password = "bean";
+    private static String username = "Android";
+    private static String password = "bean";
 
     public MqttHelper(Context context){
         mqttAndroidClient = new MqttAndroidClient(context,serverUri,clientId);

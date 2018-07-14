@@ -19,7 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
+//import android.widget.Toast;
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
@@ -70,11 +70,12 @@ public class OpenCVActivity extends Activity
     Context context;
     Boolean firstTime = true;
     int counter = 0;
-    ArrayList<Double> pastFrames = new ArrayList<Double>();
+    ArrayList<Double> pastFrames = new ArrayList<>();
 
     private static final String ACTION_USB_PERMISSION = "com.google.android.DemoKit.action.USB_PERMISSION";
 
-    private double lastAVGx = 0;
+    private static final int CameraCode = 1;
+
     private double lastSize = 0;
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -91,22 +92,23 @@ public class OpenCVActivity extends Activity
         }
     };
 
+    //onRequestPermissions is just a callback to see if we got results
+
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case CameraCode: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("onRequestPermissions", "Permission was granted for Camera use");
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                 } else {
-                    Log.d("onRequestPermissions","Permissions denied what the fuck");
+                    Log.d("onRequestPermissions","Permissions denied for some reason");
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
-                return;
+                break;
             }
 
             // other 'case' lines to check for other
@@ -127,6 +129,9 @@ public class OpenCVActivity extends Activity
         ActivityCompat.requestPermissions(this,
                 new String[]{permissionName}, permissionRequestCode);
     }
+
+    //Deprecated code for USB transfer, can be used in case MQTT is not needed/wanted
+
 //    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
@@ -169,6 +174,9 @@ public class OpenCVActivity extends Activity
 //        }
 //    };
 
+
+    //Loads in the cascade to a file and creates a cascadeClassifier
+
     private void initializeOpenCVDependencies() {
         try {
             // Copy the resource into a temp file so OpenCV can load it
@@ -210,23 +218,27 @@ public class OpenCVActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
+        //Hack to get the permissions to pop up on my OnePlus, needed for API above 23
+        //OP is on 26 so needs it, still doesn't work
+        //TODO: Fix the permissions
+
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.d("Camera Permission", "Permission not granted, in onCreate");
+            Log.d("Permissions", "Permission not granted, in onCreate");
             // Permission is not granted
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.CAMERA)) {
-                Log.d("Should show rationale","in this block");
-                showExplanation("Permission needed","janky hack to get this to work",Manifest.permission.CAMERA,1);
+                Log.d("Permissions","Should show rationale");
+                showExplanation("Permissions","janky hack to get this to work",Manifest.permission.CAMERA,CameraCode);
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
             } else {
                 // No explanation needed; request the permission
-                Log.d("no rationale needed","here");
-                requestPermission(Manifest.permission.CAMERA, 1);
+                Log.d("Permissions","No rationale required");
+                requestPermission(Manifest.permission.CAMERA, CameraCode);
             }
         }
         super.onCreate(savedInstanceState);
@@ -368,7 +380,7 @@ public class OpenCVActivity extends Activity
 
     }
 
-    public double Calculations(Point tl, Point br) {
+    public void Calculations(Point tl, Point br) {
         double avg = (tl.x + br.x) / 2;
         double errorBound = 0.002 * (getSize());
         double oldAvg = getAverage();
@@ -387,7 +399,6 @@ public class OpenCVActivity extends Activity
             Log.d("Values", "dif = " + String.valueOf(dif) + " , errorBound = " + String.valueOf(errorBound));
             Stopped();
         }
-        return avg;
     }
 
 
@@ -459,25 +470,33 @@ public class OpenCVActivity extends Activity
 //        return lastAVGx = avg;
 //    }
 
-    public double setSize(double size) {
-        return lastSize = size;
+
+    //Data Encapsulation sorta
+
+    public void setSize(double size) {
+        lastSize = size;
     }
 
-    public static Mat rotate(Mat src, double angle) {
-        Mat dst = new Mat();
-        if (angle == 180 || angle == -180) {
-            Core.flip(src, dst, -1);
-        } else if (angle == 90 || angle == -270) {
-            Core.flip(src.t(), dst, 1);
-        } else if (angle == 270 || angle == -90) {
-            Core.flip(src.t(), dst, 0);
-        }
 
-        Imgproc.resize(dst, dst, src.size());
+    //Deprecated method used to attempt rotation of mats
 
+//    public static Mat rotate(Mat src, double angle) {
+//        Mat dst = new Mat();
+//        if (angle == 180 || angle == -180) {
+//            Core.flip(src, dst, -1);
+//        } else if (angle == 90 || angle == -270) {
+//            Core.flip(src.t(), dst, 1);
+//        } else if (angle == 270 || angle == -90) {
+//            Core.flip(src.t(), dst, 0);
+//        }
+//
+//        Imgproc.resize(dst, dst, src.size());
+//
+//
+//        return dst;
+//    }
 
-        return dst;
-    }
+    //Obsolete USB code, use in case necessary
 
 //    public void beginUsb() {
 //        permissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
@@ -505,43 +524,9 @@ public class OpenCVActivity extends Activity
 //        }
 //    }
 
-    //Obsolete USB code, possibly use in case of backup
+    //To change output from CloudMQTT to a USB cable, uncomment above code and use oS.write(): to write the output stream
 
-//    public void Right() {
-//        byte[] buffer = {(byte)3, (byte)4};
-//        if(oS!= null){
-//            try {
-//                Toast.makeText(this,"Right", Toast.LENGTH_SHORT).show();
-//                oS.write(buffer);
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    public void Left() {
-//        byte[] buffer = {(byte)3, (byte)5};
-//        if(oS!= null){
-//            try {
-//                Toast.makeText(this,"Left", Toast.LENGTH_SHORT).show();
-//                oS.write(buffer);
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//
-//    public void Stop() {
-//        byte[] buffer = {(byte)3, (byte)6};
-//        if(oS!= null){
-//            try {
-//                Toast.makeText(this,"Stop", Toast.LENGTH_SHORT).show();
-//                oS.write(buffer);
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    //The phone is moving left relative to the face
 
     private void MovingLeft() {
         byte[] buffer = "left".getBytes();
@@ -549,11 +534,15 @@ public class OpenCVActivity extends Activity
         mqttManager.publish("Commands", buffer, 2, false);
     }
 
+    //The phone is moving right relative to the face
+
     private void MovingRight() {
         byte[] buffer = "right".getBytes();
         Log.d("Right", "  published");
         mqttManager.publish("Commands", buffer, 2, false);
     }
+
+    //The phone is stopped relative to the face
 
     private void Stopped() {
         byte[] buffer = "stopped".getBytes();
@@ -603,23 +592,25 @@ public class OpenCVActivity extends Activity
         mqttManager.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
-
+                Log.d("Mqtt", "connection completed to CloudMQTT");
             }
 
             @Override
             public void connectionLost(Throwable cause) {
-
+                Log.d("Mqtt", "connection was lost");
+                cause.printStackTrace();
             }
 
             @Override
             public void messageArrived(String topic, MqttMessage message) throws Exception {
                 Log.d(topic, message.toString());
+                Log.d("Mqtt", "message sent");
 //                Toast.makeText(context, message.toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void deliveryComplete(IMqttDeliveryToken token) {
-
+                Log.d("Mqtt", "message delivered");
             }
         });
     }
